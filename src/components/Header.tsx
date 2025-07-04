@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
         name: 'Marie Dubois',
         email: 'marie.dubois@example.com',
         avatar: null,
-        isAuthenticated: false // Changez à true pour voir l'interface utilisateur connecté
+        isAuthenticated: true // Changez à true pour voir l'interface utilisateur connecté
     };
 
     return (
@@ -99,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                                                 <Settings className="h-4 w-4 mr-2" />
                                                 Tableau de bord
                                             </Link>
-                                            <Link href="/my-resources" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <Link href="/favorites" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                 <Settings className="h-4 w-4 mr-2" />
                                                 Mes ressources
                                             </Link>
@@ -168,7 +168,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                                     <Link href="/profil" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
                                         Mon profil
                                     </Link>
-                                    <Link href="/my-resources" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
+                                    <Link href="/favorites" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
                                         Mes ressources
                                     </Link>
                                     <Link href="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-blue-600">

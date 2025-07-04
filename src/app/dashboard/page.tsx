@@ -253,7 +253,7 @@ export default function TableauBordPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-semibold text-gray-900">Ressources récentes</h2>
-                            <Link href="/my-resources" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            <Link href="/favorites" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                                 Voir tout →
                             </Link>
                         </div>
@@ -410,7 +410,7 @@ export default function TableauBordPage() {
                                 <BookOpen className="h-5 w-5 mr-3" />
                                 <span className="text-sm font-medium">Explorer les ressources</span>
                             </Link>
-                            <Link href="/my-resources" className="flex items-center p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                            <Link href="/favorites" className="flex items-center p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
                                 <Star className="h-5 w-5 mr-3" />
                                 <span className="text-sm font-medium">Mes favoris</span>
                             </Link>
