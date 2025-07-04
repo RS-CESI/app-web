@@ -165,7 +165,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                                             <p className="text-xs text-gray-500">{user.email}</p>
                                         </div>
                                     </div>
-                                    <Link href="/my-profil" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
+                                    <Link href="/profil" className="block px-3 py-2 text-gray-700 hover:text-blue-600">
                                         Mon profil
                                     </Link>
                                     <Link href="/my-resources" className="block px-3 py-2 text-gray-700 hover:text-blue-600">

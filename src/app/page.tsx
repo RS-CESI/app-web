@@ -26,7 +26,7 @@ export default function HomePage() {
                                 <ChevronRight className="ml-2 h-5 w-5" />
                             </button>
                         </Link>
-                        <Link href="/login">
+                        <Link href="/register">
                             <button className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:border-blue-600 hover:text-blue-600 transition-all">
                                 Créer un compte gratuit
                             </button>

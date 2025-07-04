@@ -157,7 +157,7 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
                             <Link href="/accessibility" className="text-gray-400 hover:text-white transition-colors text-sm">
                                 Accessibilité : non conforme
                             </Link>
-                            <Link href="/legal-mentions" className="text-gray-400 hover:text-white transition-colors text-sm">
+                            <Link href="/legal-notices" className="text-gray-400 hover:text-white transition-colors text-sm">
                                 Mentions légales
                             </Link>
                         </div>
