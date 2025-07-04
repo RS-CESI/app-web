@@ -1,345 +1,264 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, User, Calendar, MapPin, Heart, Users, MessageCircle, TrendingUp } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, LogIn, AlertCircle, CheckCircle, Users, Heart, MessageCircle } from 'lucide-react';
 
-export default function InscriptionPage() {
+export default function ConnexionPage() {
     const [showPassword, setShowPassword] = React.useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
     const [formData, setFormData] = React.useState({
-        prenom: '',
-        nom: '',
         email: '',
-        dateNaissance: '',
-        ville: '',
         password: '',
-        confirmPassword: '',
-        interets: [],
-        accepteConditions: false,
-        accepteNewsletter: false
+        rememberMe: false
     });
+    const [errors, setErrors] = React.useState({
+        email: '',
+        password: '',
+        general: ''
+    });
+    const [isLoading, setIsLoading] = React.useState(false);
 
-    const interetsOptions = [
-        { id: 'couple', label: 'Relations amoureuses', icon: Heart },
-        { id: 'famille', label: 'Relations familiales', icon: Users },
-        { id: 'amitie', label: 'Relations amicales', icon: MessageCircle },
-        { id: 'travail', label: 'Relations professionnelles', icon: TrendingUp }
-    ];
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        setErrors({ email: '', password: '', general: '' });
 
-    const handleInteretChange = (interetId: string) => {
-        setFormData(prev => ({
-            ...prev,
-            interets: prev.interets.includes(interetId)
-                ? prev.interets.filter(id => id !== interetId)
-                : [...prev.interets, interetId]
-        }));
-    };
+        // Validation simple
+        let newErrors = { email: '', password: '', general: '' };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Logique d'inscription ici
-        console.log('Données d\'inscription:', formData);
+        if (!formData.email) {
+            newErrors.email = 'L\'adresse email est requise';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'L\'adresse email n\'est pas valide';
+        }
+
+        if (!formData.password) {
+            newErrors.password = 'Le mot de passe est requis';
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+        }
+
+        if (newErrors.email || newErrors.password) {
+            setErrors(newErrors);
+            setIsLoading(false);
+            return;
+        }
+
+        // Simulation de l'authentification
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Simulation d'une erreur d'authentification pour la démo
+            if (formData.email === 'demo@test.fr' && formData.password === 'demo123') {
+                // Succès de connexion
+                console.log('Connexion réussie!');
+                // Ici vous redirigeriez vers le tableau de bord
+            } else {
+                setErrors({ ...newErrors, general: 'Email ou mot de passe incorrect' });
+            }
+        } catch (error) {
+            setErrors({ ...newErrors, general: 'Une erreur est survenue. Veuillez réessayer.' });
+        }
+
+        setIsLoading(false);
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-12">
-            <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                        Rejoignez (RE)Sources Relationnelles
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <LogIn className="h-8 w-8 text-white" />
+                    </div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        Bienvenue
                     </h1>
-                    <p className="text-gray-600 max-w-lg mx-auto">
-                        Créez votre compte gratuit et accédez à toutes nos ressources pour améliorer vos relations.
+                    <p className="text-gray-600">
+                        Connectez-vous à votre compte (RE)Sources Relationnelles
                     </p>
                 </div>
 
-                {/* Formulaire */}
-                <div className="bg-white rounded-2xl shadow-lg p-8">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-
-                        {/* Informations personnelles */}
+                {/* Demo Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-start">
+                        <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations personnelles</h3>
-
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="prenom" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Prénom *
-                                    </label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            id="prenom"
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Votre prénom"
-                                            value={formData.prenom}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, prenom: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label htmlFor="nom" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nom *
-                                    </label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            id="nom"
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Votre nom"
-                                            value={formData.nom}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
+                            <h3 className="text-sm font-medium text-blue-900 mb-1">Compte de démonstration</h3>
+                            <p className="text-xs text-blue-700 mb-2">Utilisez ces identifiants pour tester la connexion :</p>
+                            <div className="text-xs text-blue-800">
+                                <p><strong>Email :</strong> demo@test.fr</p>
+                                <p><strong>Mot de passe :</strong> demo123</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Adresse email *
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        required
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="votre.email@exemple.fr"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                    />
-                                </div>
+                {/* Formulaire de connexion */}
+                <div className="bg-white rounded-2xl shadow-lg p-8">
+
+                    {/* Erreur générale */}
+                    {errors.general && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div className="flex items-center">
+                                <AlertCircle className="h-5 w-5 text-red-600 mr-3" />
+                                <span className="text-sm text-red-700">{errors.general}</span>
                             </div>
+                        </div>
+                    )}
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="dateNaissance" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Date de naissance
-                                    </label>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="date"
-                                            id="dateNaissance"
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            value={formData.dateNaissance}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, dateNaissance: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
+                    <div className="space-y-6">
 
-                                <div>
-                                    <label htmlFor="ville" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Ville
-                                    </label>
-                                    <div className="relative">
-                                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            id="ville"
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Votre ville"
-                                            value={formData.ville}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, ville: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
+                        {/* Email */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Adresse email
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <input
+                                    type="email"
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                        errors.email ? 'border-red-300' : 'border-gray-300'
+                                    }`}
+                                    placeholder="votre.email@exemple.fr"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                />
                             </div>
+                            {errors.email && (
+                                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                            )}
                         </div>
 
                         {/* Mot de passe */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sécurité</h3>
-
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Mot de passe *
-                                    </label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            id="password"
-                                            required
-                                            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Votre mot de passe"
-                                            value={formData.password}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Confirmer le mot de passe *
-                                    </label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type={showConfirmPassword ? 'text' : 'password'}
-                                            id="confirmPassword"
-                                            required
-                                            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Confirmer le mot de passe"
-                                            value={formData.confirmPassword}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                        </button>
-                                    </div>
-                                </div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Mot de passe
+                            </label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                        errors.password ? 'border-red-300' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Votre mot de passe"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
                             </div>
-
-                            <div className="mt-2">
-                                <p className="text-xs text-gray-500">
-                                    Le mot de passe doit contenir au moins 8 caractères avec des lettres et des chiffres.
-                                </p>
-                            </div>
+                            {errors.password && (
+                                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                            )}
                         </div>
 
-                        {/* Centres d'intérêt */}
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Centres d'intérêt</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Sélectionnez les domaines qui vous intéressent pour personnaliser votre expérience.
-                            </p>
-
-                            <div className="grid md:grid-cols-2 gap-3">
-                                {interetsOptions.map(option => {
-                                    const IconComponent = option.icon;
-                                    return (
-                                        <label
-                                            key={option.id}
-                                            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                                formData.interets.includes(option.id)
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-gray-300'
-                                            }`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only"
-                                                checked={formData.interets.includes(option.id)}
-                                                onChange={() => handleInteretChange(option.id)}
-                                            />
-                                            <IconComponent className={`h-5 w-5 mr-3 ${
-                                                formData.interets.includes(option.id) ? 'text-blue-600' : 'text-gray-400'
-                                            }`} />
-                                            <span className={`text-sm font-medium ${
-                                                formData.interets.includes(option.id) ? 'text-blue-900' : 'text-gray-700'
-                                            }`}>
-                        {option.label}
-                      </span>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Conditions */}
-                        <div className="space-y-4">
-                            <label className="flex items-start">
+                        {/* Options */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
                                 <input
                                     type="checkbox"
-                                    required
-                                    className="mt-1 mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                    checked={formData.accepteConditions}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, accepteConditions: e.target.checked }))}
+                                    id="rememberMe"
+                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    checked={formData.rememberMe}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
                                 />
-                                <span className="text-sm text-gray-700">
-                  J'accepte les{' '}
-                                    <Link href="/conditions" className="text-blue-600 hover:text-blue-700 underline">
-                    conditions d'utilisation
-                  </Link>{' '}
-                                    et la{' '}
-                                    <Link href="/confidentiality" className="text-blue-600 hover:text-blue-700 underline">
-                    politique de confidentialité
-                  </Link>
-                  . *
-                </span>
-                            </label>
-
-                            <label className="flex items-start">
-                                <input
-                                    type="checkbox"
-                                    className="mt-1 mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                    checked={formData.accepteNewsletter}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, accepteNewsletter: e.target.checked }))}
-                                />
-                                <span className="text-sm text-gray-700">
-                  Je souhaite recevoir la newsletter avec les dernières ressources et conseils relationnels.
-                </span>
-                            </label>
+                                <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+                                    Se souvenir de moi
+                                </label>
+                            </div>
+                            <Link href="/forgotPassword" className="text-sm text-blue-600 hover:text-blue-700">
+                                Mot de passe oublié ?
+                            </Link>
                         </div>
 
-                        {/* Bouton de soumission */}
+                        {/* Bouton de connexion */}
                         <button
-                            type="submit"
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                            onClick={handleSubmit}
+                            disabled={isLoading}
+                            className={`w-full py-3 px-6 rounded-lg font-medium transition-all ${
+                                isLoading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105'
+                            } text-white`}
                         >
-                            Créer mon compte
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                    Connexion...
+                                </div>
+                            ) : (
+                                'Se connecter'
+                            )}
                         </button>
-                    </form>
+                    </div>
 
-                    {/* Lien vers connexion */}
+                    {/* Lien vers inscription */}
                     <div className="mt-6 text-center">
                         <p className="text-gray-600">
-                            Vous avez déjà un compte ?{' '}
-                            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                                Se connecter
+                            Vous n'avez pas encore de compte ?{' '}
+                            <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                                Créer un compte gratuit
                             </Link>
                         </p>
                     </div>
                 </div>
 
-                {/* Avantages */}
-                <div className="mt-8 bg-white/50 backdrop-blur-sm rounded-xl p-6">
+                {/* Section informative */}
+                <div className="mt-8 bg-white/70 backdrop-blur-sm rounded-xl p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                        Pourquoi créer un compte ?
+                        Accédez à votre espace personnel
                     </h3>
-                    <div className="grid md:grid-cols-3 gap-4 text-center">
-                        <div>
-                            <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <Users className="h-6 w-6 text-blue-600" />
+                    <div className="grid grid-cols-1 gap-4">
+                        <div className="flex items-center">
+                            <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center mr-4">
+                                <Users className="h-5 w-5 text-blue-600" />
                             </div>
-                            <h4 className="font-medium text-gray-900 mb-1">Suivi personnalisé</h4>
-                            <p className="text-sm text-gray-600">Suivez votre progression et vos ressources favorites</p>
+                            <div>
+                                <h4 className="font-medium text-gray-900">Suivi personnalisé</h4>
+                                <p className="text-sm text-gray-600">Consultez vos ressources favorites et votre progression</p>
+                            </div>
                         </div>
-                        <div>
-                            <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <Heart className="h-6 w-6 text-green-600" />
+                        <div className="flex items-center">
+                            <div className="bg-green-100 w-10 h-10 rounded-lg flex items-center justify-center mr-4">
+                                <Heart className="h-5 w-5 text-green-600" />
                             </div>
-                            <h4 className="font-medium text-gray-900 mb-1">Contenus adaptés</h4>
-                            <p className="text-sm text-gray-600">Recevez des recommandations selon vos intérêts</p>
+                            <div>
+                                <h4 className="font-medium text-gray-900">Recommandations</h4>
+                                <p className="text-sm text-gray-600">Recevez des contenus adaptés à vos centres d'intérêt</p>
+                            </div>
                         </div>
-                        <div>
-                            <div className="bg-purple-100 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                <MessageCircle className="h-6 w-6 text-purple-600" />
+                        <div className="flex items-center">
+                            <div className="bg-purple-100 w-10 h-10 rounded-lg flex items-center justify-center mr-4">
+                                <MessageCircle className="h-5 w-5 text-purple-600" />
                             </div>
-                            <h4 className="font-medium text-gray-900 mb-1">Communauté</h4>
-                            <p className="text-sm text-gray-600">Participez aux discussions et activités de groupe</p>
+                            <div>
+                                <h4 className="font-medium text-gray-900">Participation</h4>
+                                <p className="text-sm text-gray-600">Participez aux discussions et activités de groupe</p>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Aide */}
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                        Besoin d'aide ? Consultez notre{' '}
+                        <Link href="/help" className="text-blue-600 hover:text-blue-700">
+                            centre d'aide
+                        </Link>{' '}
+                        ou{' '}
+                        <Link href="/about" className="text-blue-600 hover:text-blue-700">
+                            contactez-nous
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>

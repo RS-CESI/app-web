@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Search, Grid, List, BookOpen, Users, Heart, MessageCircle, TrendingUp, Star, Clock, Eye } from 'lucide-react';
 
