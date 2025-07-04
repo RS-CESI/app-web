@@ -1,6 +1,9 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx}'
+  ],
   theme: {
     extend: {
       colors: {
@@ -45,8 +48,8 @@ module.exports = {
         soft: 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
       scale: {
-        101: '1.01',
-        102: '1.02',
+        '101': '1.01',
+        '102': '1.02',
       },
       animation: {
         fadeIn: 'fadeIn 1s ease-out',
@@ -66,4 +69,6 @@ module.exports = {
     },
   },
   plugins: [],
-};
+}
+
+export default config
