@@ -1,5 +1,4 @@
 import { API_CONFIG } from './config';
-import { LOCAL_STORAGE_KEYS } from './config';
 import type { ApiErrorResponse } from '@/types/api';
 
 export class ApiError extends Error {
