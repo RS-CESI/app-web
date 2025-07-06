@@ -2,7 +2,7 @@
 
 import React, { createContext, JSX, useContext } from 'react';
 import { AuthApi, handleApiError, LOCAL_STORAGE_KEYS } from '@/lib/api';
-import type { User, LoginCredentials, RegisterData } from '@/types/api';
+import type { User, LoginCredentials, RegisterData, ApiResponse } from '@/types/api';
 
 interface AuthContextType {
     user: User | null;
@@ -36,7 +36,6 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
             setLoading(true);
             setError(null);
 
-            // Vérifier s'il y a un token en localStorage
             const token = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
             console.log('🔍 AuthContext - Vérification auth - Token présent:', !!token);
 
@@ -49,12 +48,14 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
             console.log('🔑 AuthContext - Token trouvé, récupération du profil...');
 
-            // Récupérer le profil utilisateur
-            const response = await AuthApi.getProfile();
+            const response: ApiResponse<User> = await AuthApi.getProfile();
             console.log('✅ AuthContext - Profil récupéré:', response);
 
-            // @ts-ignore
-            setUser(response.user || response);
+            // Extraction des données utilisateur selon votre structure ApiResponse
+            const userData: User | null = response.user || response.data || null;
+
+            console.log('👤 AuthContext - Données utilisateur extraites:', userData);
+            setUser(userData);
         } catch (error) {
             console.error('❌ AuthContext - Erreur lors de la vérification auth:', error);
 
@@ -62,7 +63,6 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
             if (errorInfo.type === 'auth') {
                 console.log('🚫 AuthContext - Token expiré/invalide - suppression');
-                // Token expiré ou invalide
                 localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
                 setUser(null);
             } else {
@@ -79,11 +79,14 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
             setError(null);
             console.log('🔐 AuthContext - Tentative de connexion...');
 
-            const response = await AuthApi.login(credentials);
+            const response: ApiResponse<User> = await AuthApi.login(credentials);
             console.log('✅ AuthContext - Connexion réussie:', response);
 
-            // @ts-ignore
-            setUser(response.user || response);
+            // Extraction des données utilisateur selon votre structure ApiResponse
+            const userData: User | null = response.user || response.data || null;
+
+            console.log('👤 AuthContext - Utilisateur connecté:', userData);
+            setUser(userData);
             return { success: true };
         } catch (error) {
             console.error('❌ AuthContext - Erreur de connexion:', error);
@@ -105,7 +108,6 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         } catch (error) {
             console.error('❌ AuthContext - Erreur de déconnexion:', error);
             const errorInfo = handleApiError(error);
-            // Même en cas d'erreur, on déconnecte l'utilisateur localement
             setUser(null);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
             return { success: false, error: errorInfo };
@@ -116,12 +118,22 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         try {
             setError(null);
             console.log('📝 AuthContext - Tentative d\'inscription...');
+            console.log('📤 AuthContext - Données envoyées:', userData);
 
-            const response = await AuthApi.register(userData);
+            const response: ApiResponse<User> = await AuthApi.register(userData);
             console.log('✅ AuthContext - Inscription réussie:', response);
 
-            // @ts-ignore
-            setUser(response.user || response);
+            // Extraction des données utilisateur selon votre structure ApiResponse
+            const newUser: User | null = response.user || response.data || null;
+
+            console.log('👤 AuthContext - Nouvel utilisateur défini:', newUser);
+            setUser(newUser);
+
+            console.log('🔄 AuthContext - État utilisateur après inscription:', {
+                user: newUser,
+                isAuthenticated: !!newUser
+            });
+
             return { success: true };
         } catch (error) {
             console.error('❌ AuthContext - Erreur d\'inscription:', error);

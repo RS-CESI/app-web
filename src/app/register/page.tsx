@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function RegisterPage(): JSX.Element {
     const router = useRouter();
-    const { register } = useAuth(); // Utiliser le contexte au lieu du hook local
+    const { register } = useAuth();
     const [showPassword, setShowPassword] = React.useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>(false);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -112,8 +112,11 @@ export default function RegisterPage(): JSX.Element {
                     localStorage.setItem(LOCAL_STORAGE_KEYS.PENDING_PROFILE_UPDATE, JSON.stringify(additionalInfo));
                 }
 
-                // Redirection vers le tableau de bord
-                router.push('/dashboard');
+                // Petit délai pour laisser le contexte se mettre à jour
+                setTimeout(() => {
+                    console.log('🔄 Redirection vers dashboard après inscription');
+                    router.push('/dashboard');
+                }, 100);
             } else {
                 // Gestion des erreurs via le contexte
                 if (result.error && result.error.type === 'validation' && result.error.errors) {
@@ -438,18 +441,6 @@ export default function RegisterPage(): JSX.Element {
                                     <p className="mt-1 text-sm text-red-600">{errors.accepteConditions}</p>
                                 )}
                             </div>
-
-                            <label className="flex items-start">
-                                <input
-                                    type="checkbox"
-                                    className="mt-1 mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                    checked={formData.accepteNewsletter}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, accepteNewsletter: e.target.checked }))}
-                                />
-                                <span className="text-sm text-gray-700">
-                                    Je souhaite recevoir la newsletter avec les dernières ressources et conseils relationnels.
-                                </span>
-                            </label>
                         </div>
 
                         {/* Bouton de soumission */}
