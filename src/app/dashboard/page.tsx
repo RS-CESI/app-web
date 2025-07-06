@@ -1,13 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { JSX } from 'react';
 import Link from 'next/link';
-import { BarChart3, TrendingUp, Heart, Users, MessageCircle, BookOpen, Star, Clock, Calendar, Target, Award, Activity } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { BarChart3, TrendingUp, Heart, Users, MessageCircle, BookOpen, Star, Clock, Calendar, Target, Award, Activity, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function TableauBordPage() {
-    const [selectedPeriod, setSelectedPeriod] = React.useState('30');
+export default function TableauBordPage(): JSX.Element {
+    const router = useRouter();
+    const { user, loading, isAuthenticated } = useAuth();
+    const [selectedPeriod, setSelectedPeriod] = React.useState<string>('30');
 
-    // Données utilisateur
+    // Redirection si non authentifié
+    React.useEffect(() => {
+        if (!loading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [loading, isAuthenticated, router]);
+
+    // Affichage du loader pendant la vérification
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Chargement de votre tableau de bord...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Si pas authentifié, ne rien afficher (la redirection va se faire)
+    if (!isAuthenticated || !user) {
+        return null;
+    }
+
+    // Extraction du prénom depuis le nom complet
+    const firstName = user.name.split(' ')[0];
+
+    // Données utilisateur (pour l'instant simulées, à remplacer par des appels API)
     const userStats = {
         ressourcesConsultees: 24,
         tempsTotal: 8.5, // heures
@@ -18,7 +49,7 @@ export default function TableauBordPage() {
         streak: 7 // jours consécutifs
     };
 
-    // Ressources récentes
+    // Ressources récentes (à remplacer par un appel API)
     const ressourcesRecentes = [
         {
             id: 1,
@@ -52,7 +83,7 @@ export default function TableauBordPage() {
         }
     ];
 
-    // Recommandations
+    // Recommandations (à remplacer par un appel API basé sur les intérêts de l'utilisateur)
     const recommandations = [
         {
             id: 1,
@@ -80,7 +111,7 @@ export default function TableauBordPage() {
         }
     ];
 
-    // Activités à venir
+    // Activités à venir (à remplacer par un appel API)
     const activitesAVenir = [
         {
             id: 1,
@@ -100,7 +131,7 @@ export default function TableauBordPage() {
         }
     ];
 
-    const getCategoryColor = (category: string) => {
+    const getCategoryColor = (category: string): string => {
         switch (category) {
             case 'couple': return 'bg-pink-100 text-pink-800';
             case 'famille': return 'bg-green-100 text-green-800';
@@ -120,13 +151,40 @@ export default function TableauBordPage() {
         }
     };
 
+    // Fonction pour déterminer l'heure de la journée
+    const getTimeOfDay = (): string => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Bonjour';
+        if (hour < 18) return 'Bon après-midi';
+        return 'Bonsoir';
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            {/* Header */}
+            {/* Header personnalisé */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
-                <p className="text-gray-600">Suivez votre progression et découvrez de nouvelles ressources</p>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {getTimeOfDay()}, {firstName} !
+                </h1>
+                <p className="text-gray-600">
+                    Bienvenue sur votre tableau de bord. Voici un aperçu de votre parcours relationnel.
+                </p>
+
+                {/* Informations utilisateur */}
+                <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-white text-sm font-medium">
+                                {user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                            </span>
+                        </div>
+                        <div>
+                            <p className="font-medium text-blue-900">{user.name}</p>
+                            <p className="text-sm text-blue-700">{user.email}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Période de filtrage */}
@@ -252,7 +310,7 @@ export default function TableauBordPage() {
                     {/* Ressources récentes */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900">Ressources récentes</h2>
+                            <h2 className="text-xl font-semibold text-gray-900">Vos ressources récentes</h2>
                             <Link href="/favorites" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                                 Voir tout →
                             </Link>
@@ -268,8 +326,8 @@ export default function TableauBordPage() {
                                                 <div className="flex items-center mb-2">
                                                     <CategoryIcon className="h-4 w-4 mr-2 text-gray-500" />
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(ressource.category)}`}>
-                            {ressource.type}
-                          </span>
+                                                        {ressource.type}
+                                                    </span>
                                                     <span className="text-xs text-gray-500 ml-2">{ressource.duree}</span>
                                                 </div>
                                                 <h3 className="font-medium text-gray-900 mb-1">{ressource.title}</h3>
@@ -317,7 +375,7 @@ export default function TableauBordPage() {
                     {/* Graphique d'activité */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900">Activité des 7 derniers jours</h2>
+                            <h2 className="text-xl font-semibold text-gray-900">Votre activité des 7 derniers jours</h2>
                             <BarChart3 className="h-5 w-5 text-gray-400" />
                         </div>
 
@@ -347,10 +405,10 @@ export default function TableauBordPage() {
                 {/* Sidebar droite */}
                 <div className="space-y-6">
 
-                    {/* Recommandations */}
+                    {/* Recommandations personnalisées */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Recommandations</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">Recommandations pour vous</h3>
                             <Link href="/resources" className="text-blue-600 hover:text-blue-700 text-sm">
                                 Voir plus
                             </Link>
@@ -378,7 +436,7 @@ export default function TableauBordPage() {
                     {/* Activités à venir */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Activités à venir</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">Prochaines activités</h3>
                             <Calendar className="h-5 w-5 text-gray-400" />
                         </div>
 
@@ -402,9 +460,9 @@ export default function TableauBordPage() {
                         </Link>
                     </div>
 
-                    {/* Actions rapides */}
+                    {/* Actions rapides personnalisées */}
                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-                        <h3 className="text-lg font-semibold mb-4">Actions rapides</h3>
+                        <h3 className="text-lg font-semibold mb-4">Vos actions rapides</h3>
                         <div className="space-y-3">
                             <Link href="/resources" className="flex items-center p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
                                 <BookOpen className="h-5 w-5 mr-3" />
@@ -416,7 +474,7 @@ export default function TableauBordPage() {
                             </Link>
                             <Link href="/profil" className="flex items-center p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
                                 <Users className="h-5 w-5 mr-3" />
-                                <span className="text-sm font-medium">Mon profil</span>
+                                <span className="text-sm font-medium">Modifier mon profil</span>
                             </Link>
                         </div>
                     </div>

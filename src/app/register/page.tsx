@@ -1,13 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { JSX } from 'react';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, User, Calendar, MapPin, Heart, Users, MessageCircle, TrendingUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Mail, Lock, User, Calendar, MapPin, Heart, Users, MessageCircle, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function RegisterPage() {
-    const [showPassword, setShowPassword] = React.useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-    const [formData, setFormData] = React.useState({
+// Import de notre couche API et contexte
+import type { RegisterFormData, RegisterErrors, InteretOption } from '@/types/auth';
+import { handleApiError, LOCAL_STORAGE_KEYS } from '@/lib/api';
+import { validateForm, VALIDATION_RULES, type ValidationSchema } from '@/lib/utils/validation';
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function RegisterPage(): JSX.Element {
+    const router = useRouter();
+    const { register } = useAuth(); // Utiliser le contexte au lieu du hook local
+    const [showPassword, setShowPassword] = React.useState<boolean>(false);
+    const [showConfirmPassword, setShowConfirmPassword] = React.useState<boolean>(false);
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [formData, setFormData] = React.useState<RegisterFormData>({
         prenom: '',
         nom: '',
         email: '',
@@ -19,15 +29,26 @@ export default function RegisterPage() {
         accepteConditions: false,
         accepteNewsletter: false
     });
+    const [errors, setErrors] = React.useState<RegisterErrors>({});
 
-    const interetsOptions = [
+    const interetsOptions: InteretOption[] = [
         { id: 'couple', label: 'Relations amoureuses', icon: Heart },
         { id: 'famille', label: 'Relations familiales', icon: Users },
         { id: 'amitie', label: 'Relations amicales', icon: MessageCircle },
         { id: 'travail', label: 'Relations professionnelles', icon: TrendingUp }
     ];
 
-    const handleInteretChange = (interetId: string) => {
+    // Règles de validation spécifiques à l'inscription
+    const validationSchema: ValidationSchema = {
+        prenom: { ...VALIDATION_RULES.name, message: 'Le prénom est requis' },
+        nom: { ...VALIDATION_RULES.name, message: 'Le nom est requis' },
+        email: VALIDATION_RULES.email,
+        password: { ...VALIDATION_RULES.password, minLength: 8 },
+        confirmPassword: { required: true, message: 'Veuillez confirmer votre mot de passe' },
+        accepteConditions: { required: true, message: 'Vous devez accepter les conditions d\'utilisation' }
+    };
+
+    const handleInteretChange = (interetId: string): void => {
         setFormData(prev => ({
             ...prev,
             interets: prev.interets.includes(interetId)
@@ -36,10 +57,93 @@ export default function RegisterPage() {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const validatePasswords = (): string | null => {
+        if (formData.password !== formData.confirmPassword) {
+            return 'Les mots de passe ne correspondent pas';
+        }
+        return null;
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        // Logique d'inscription ici
-        console.log('Données d\'inscription:', formData);
+        setIsLoading(true);
+        setErrors({});
+
+        // Validation côté client
+        const { isValid, errors: validationErrors } = validateForm(formData, validationSchema);
+
+        // Validation des mots de passe
+        const passwordError = validatePasswords();
+        if (passwordError) {
+            validationErrors.confirmPassword = passwordError;
+        }
+
+        if (!isValid || passwordError) {
+            setErrors(validationErrors);
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            // Préparation des données pour l'API Laravel (selon votre contrôleur)
+            const registrationData = {
+                name: `${formData.prenom} ${formData.nom}`, // Le contrôleur attend 'name'
+                email: formData.email,
+                password: formData.password,
+                password_confirmation: formData.confirmPassword, // Laravel attend 'password_confirmation'
+            };
+
+            console.log('Données d\'inscription envoyées:', registrationData);
+
+            // Appel API via le contexte
+            const result = await register(registrationData);
+
+            if (result.success) {
+                console.log('Inscription réussie via contexte!');
+
+                // Stocker les informations supplémentaires en localStorage si nécessaire
+                if (formData.dateNaissance || formData.ville || formData.interets.length > 0) {
+                    const additionalInfo = {
+                        dateNaissance: formData.dateNaissance,
+                        ville: formData.ville,
+                        interets: formData.interets,
+                        newsletter: formData.accepteNewsletter
+                    };
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.PENDING_PROFILE_UPDATE, JSON.stringify(additionalInfo));
+                }
+
+                // Redirection vers le tableau de bord
+                router.push('/dashboard');
+            } else {
+                // Gestion des erreurs via le contexte
+                if (result.error && result.error.type === 'validation' && result.error.errors) {
+                    const serverErrors: RegisterErrors = {};
+
+                    if (result.error.errors.name) {
+                        serverErrors.nom = result.error.errors.name[0];
+                    }
+                    if (result.error.errors.email) {
+                        serverErrors.email = result.error.errors.email[0];
+                    }
+                    if (result.error.errors.password) {
+                        serverErrors.password = result.error.errors.password[0];
+                    }
+
+                    setErrors(serverErrors);
+                } else {
+                    setErrors({ general: result.error?.message || 'Une erreur est survenue' });
+                }
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de l\'inscription:', error);
+
+            // Gestion des erreurs avec notre utilitaire
+            const errorInfo = handleApiError(error);
+            setErrors({ general: errorInfo.message });
+        }
+
+        setIsLoading(false);
     };
 
     return (
@@ -56,8 +160,32 @@ export default function RegisterPage() {
                     </p>
                 </div>
 
+                {/* Info API */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-start">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-3" />
+                        <div>
+                            <h3 className="text-sm font-medium text-green-900 mb-1">API Laravel Connectée</h3>
+                            <p className="text-xs text-green-700">
+                                Inscription via AuthApi.register() - Endpoint: /register
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Formulaire */}
                 <div className="bg-white rounded-2xl shadow-lg p-8">
+
+                    {/* Erreur générale */}
+                    {errors.general && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div className="flex items-center">
+                                <AlertCircle className="h-5 w-5 text-red-600 mr-3" />
+                                <span className="text-sm text-red-700">{errors.general}</span>
+                            </div>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
 
                         {/* Informations personnelles */}
@@ -75,12 +203,17 @@ export default function RegisterPage() {
                                             type="text"
                                             id="prenom"
                                             required
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                errors.prenom ? 'border-red-300' : 'border-gray-300'
+                                            }`}
                                             placeholder="Votre prénom"
                                             value={formData.prenom}
                                             onChange={(e) => setFormData(prev => ({ ...prev, prenom: e.target.value }))}
                                         />
                                     </div>
+                                    {errors.prenom && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.prenom}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -93,12 +226,17 @@ export default function RegisterPage() {
                                             type="text"
                                             id="nom"
                                             required
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                errors.nom ? 'border-red-300' : 'border-gray-300'
+                                            }`}
                                             placeholder="Votre nom"
                                             value={formData.nom}
                                             onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
                                         />
                                     </div>
+                                    {errors.nom && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.nom}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -112,12 +250,17 @@ export default function RegisterPage() {
                                         type="email"
                                         id="email"
                                         required
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                            errors.email ? 'border-red-300' : 'border-gray-300'
+                                        }`}
                                         placeholder="votre.email@exemple.fr"
                                         value={formData.email}
                                         onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                                     />
                                 </div>
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                )}
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-4">
@@ -171,7 +314,9 @@ export default function RegisterPage() {
                                             type={showPassword ? 'text' : 'password'}
                                             id="password"
                                             required
-                                            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                errors.password ? 'border-red-300' : 'border-gray-300'
+                                            }`}
                                             placeholder="Votre mot de passe"
                                             value={formData.password}
                                             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
@@ -184,6 +329,9 @@ export default function RegisterPage() {
                                             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                         </button>
                                     </div>
+                                    {errors.password && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -196,7 +344,9 @@ export default function RegisterPage() {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             id="confirmPassword"
                                             required
-                                            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                                            }`}
                                             placeholder="Confirmer le mot de passe"
                                             value={formData.confirmPassword}
                                             onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
@@ -209,6 +359,9 @@ export default function RegisterPage() {
                                             {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                         </button>
                                     </div>
+                                    {errors.confirmPassword && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -250,8 +403,8 @@ export default function RegisterPage() {
                                             <span className={`text-sm font-medium ${
                                                 formData.interets.includes(option.id) ? 'text-blue-900' : 'text-gray-700'
                                             }`}>
-                        {option.label}
-                      </span>
+                                                {option.label}
+                                            </span>
                                         </label>
                                     );
                                 })}
@@ -260,26 +413,31 @@ export default function RegisterPage() {
 
                         {/* Conditions */}
                         <div className="space-y-4">
-                            <label className="flex items-start">
-                                <input
-                                    type="checkbox"
-                                    required
-                                    className="mt-1 mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                    checked={formData.accepteConditions}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, accepteConditions: e.target.checked }))}
-                                />
-                                <span className="text-sm text-gray-700">
-                  J'accepte les{' '}
-                                    <Link href="/conditions" className="text-blue-600 hover:text-blue-700 underline">
-                    conditions d'utilisation
-                  </Link>{' '}
-                                    et la{' '}
-                                    <Link href="/confidentiality" className="text-blue-600 hover:text-blue-700 underline">
-                    politique de confidentialité
-                  </Link>
-                  . *
-                </span>
-                            </label>
+                            <div>
+                                <label className="flex items-start">
+                                    <input
+                                        type="checkbox"
+                                        required
+                                        className="mt-1 mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        checked={formData.accepteConditions}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, accepteConditions: e.target.checked }))}
+                                    />
+                                    <span className="text-sm text-gray-700">
+                                        J'accepte les{' '}
+                                        <Link href="/conditions" className="text-blue-600 hover:text-blue-700 underline">
+                                            conditions d'utilisation
+                                        </Link>{' '}
+                                        et la{' '}
+                                        <Link href="/confidentiality" className="text-blue-600 hover:text-blue-700 underline">
+                                            politique de confidentialité
+                                        </Link>
+                                        . *
+                                    </span>
+                                </label>
+                                {errors.accepteConditions && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.accepteConditions}</p>
+                                )}
+                            </div>
 
                             <label className="flex items-start">
                                 <input
@@ -289,17 +447,29 @@ export default function RegisterPage() {
                                     onChange={(e) => setFormData(prev => ({ ...prev, accepteNewsletter: e.target.checked }))}
                                 />
                                 <span className="text-sm text-gray-700">
-                  Je souhaite recevoir la newsletter avec les dernières ressources et conseils relationnels.
-                </span>
+                                    Je souhaite recevoir la newsletter avec les dernières ressources et conseils relationnels.
+                                </span>
                             </label>
                         </div>
 
                         {/* Bouton de soumission */}
                         <button
                             type="submit"
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                            disabled={isLoading}
+                            className={`w-full py-3 px-6 rounded-lg font-medium transition-all ${
+                                isLoading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105'
+                            } text-white`}
                         >
-                            Créer mon compte
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                    Création du compte...
+                                </div>
+                            ) : (
+                                'Créer mon compte'
+                            )}
                         </button>
                     </form>
 

@@ -2,9 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, LogIn, AlertCircle, CheckCircle, Users, Heart, MessageCircle } from 'lucide-react';
 
+// Import de notre couche API
+import { AuthApi, handleApiError } from '@/lib/api';
+
 export default function ConnexionPage() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = React.useState(false);
     const [formData, setFormData] = React.useState({
         email: '',
@@ -22,7 +27,7 @@ export default function ConnexionPage() {
         setIsLoading(true);
         setErrors({ email: '', password: '', general: '' });
 
-        // Validation simple
+        // Validation côté client
         let newErrors = { email: '', password: '', general: '' };
 
         if (!formData.email) {
@@ -43,23 +48,52 @@ export default function ConnexionPage() {
             return;
         }
 
-        // Simulation de l'authentification
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Appel API simplifié
+            const response = await AuthApi.login({
+                email: formData.email,
+                password: formData.password,
+                rememberMe: formData.rememberMe
+            });
 
-            // Simulation d'une erreur d'authentification pour la démo
-            if (formData.email === 'demo@test.fr' && formData.password === 'demo123') {
-                // Succès de connexion
-                console.log('Connexion réussie!');
-                // Ici vous redirigeriez vers le tableau de bord
-            } else {
-                setErrors({ ...newErrors, general: 'Email ou mot de passe incorrect' });
-            }
+            console.log('Connexion réussie!', response);
+
+            // Redirection vers le tableau de bord
+            router.push('/dashboard');
+
         } catch (error) {
-            setErrors({ ...newErrors, general: 'Une erreur est survenue. Veuillez réessayer.' });
+            console.error('Erreur de connexion:', error);
+
+            // Gestion des erreurs avec notre utilitaire
+            const errorInfo = handleApiError(error);
+
+            if (errorInfo.type === 'validation' && errorInfo.errors) {
+                const serverErrors = { email: '', password: '', general: '' };
+
+                if (errorInfo.errors.email) {
+                    serverErrors.email = errorInfo.errors.email[0];
+                }
+                if (errorInfo.errors.password) {
+                    serverErrors.password = errorInfo.errors.password[0];
+                }
+
+                setErrors(serverErrors);
+            } else {
+                setErrors({
+                    email: '',
+                    password: '',
+                    general: errorInfo.message
+                });
+            }
         }
 
         setIsLoading(false);
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSubmit();
+        }
     };
 
     return (
@@ -79,17 +113,15 @@ export default function ConnexionPage() {
                     </p>
                 </div>
 
-                {/* Demo Info */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                {/* Info API */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                     <div className="flex items-start">
-                        <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-3" />
                         <div>
-                            <h3 className="text-sm font-medium text-blue-900 mb-1">Compte de démonstration</h3>
-                            <p className="text-xs text-blue-700 mb-2">Utilisez ces identifiants pour tester la connexion :</p>
-                            <div className="text-xs text-blue-800">
-                                <p><strong>Email :</strong> demo@test.fr</p>
-                                <p><strong>Mot de passe :</strong> demo123</p>
-                            </div>
+                            <h3 className="text-sm font-medium text-green-900 mb-1">API Modulaire</h3>
+                            <p className="text-xs text-green-700">
+                                Connexion via AuthApi.login() - Structure modulaire activée
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -124,6 +156,7 @@ export default function ConnexionPage() {
                                     placeholder="votre.email@exemple.fr"
                                     value={formData.email}
                                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    onKeyPress={handleKeyPress}
                                 />
                             </div>
                             {errors.email && (
@@ -146,6 +179,7 @@ export default function ConnexionPage() {
                                     placeholder="Votre mot de passe"
                                     value={formData.password}
                                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                    onKeyPress={handleKeyPress}
                                 />
                                 <button
                                     type="button"
@@ -174,7 +208,7 @@ export default function ConnexionPage() {
                                     Se souvenir de moi
                                 </label>
                             </div>
-                            <Link href="/forgotPassword" className="text-sm text-blue-600 hover:text-blue-700">
+                            <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
                                 Mot de passe oublié ?
                             </Link>
                         </div>
