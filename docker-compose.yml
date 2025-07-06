@@ -1,0 +1,33 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ressource-web-app
+    container_name: ressource-web
+    ports:
+      - "3000:3000"
+    volumes:
+      # Monter le code source pour le hot reload
+      - .:/app
+      # Exclure node_modules pour éviter les conflits
+      - /app/node_modules
+    environment:
+      # Configuration pour Next.js
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
+      # URL de votre API Laravel
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    networks:
+      - frontend-net
+    # Redémarrer automatiquement en cas d'arrêt
+    restart: unless-stopped
+    # Garder le container en vie
+    stdin_open: true
+    tty: true
+
+networks:
+  frontend-net:
+    driver: bridge
