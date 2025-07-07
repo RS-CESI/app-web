@@ -21,6 +21,21 @@ export interface Category {
     updated_at?: string;
 }
 
+export interface Comment {
+    id: number;
+    content: string;
+    user_id: number;
+    resource_id: number;
+    parent_id?: number;
+    status: 'pending' | 'approved' | 'rejected';
+    created_at: string;
+    updated_at: string;
+
+    // Relations
+    user?: User;
+    replies?: Comment[];
+}
+
 export interface ResourceType {
     id: number;
     name: string;
@@ -80,6 +95,7 @@ export interface Resource {
     creator?: User;
     validator?: User;
     relation_types?: RelationType[];
+    comments?: Comment[];
 }
 
 export interface PaginatedResponse<T> {

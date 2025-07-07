@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Grid, List, BookOpen, Users, Heart, MessageCircle, TrendingUp, Star, Clock, Eye, Loader2 } from 'lucide-react';
 import { ResourcesApi, Resource, Category, ResourceType, ResourcesQueryParams } from '@/lib/api/resources';
+import Link from "next/link";
 
 export default function RessourcesPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -455,9 +456,11 @@ export default function RessourcesPage() {
                                         </div>
                                     </div>
 
-                                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                                        Consulter la ressource
-                                    </button>
+                                    <Link href={`/resources/${resource.id}`}>
+                                        <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Consulter la ressource
+                                        </button>
+                                    </Link>
                                 </div>
                             </div>
                         );
@@ -508,9 +511,11 @@ export default function RessourcesPage() {
                                         </div>
                                     </div>
 
-                                    <button className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
-                                        Consulter
-                                    </button>
+                                    <Link href={`/resources/${resource.id}`}>
+                                        <button className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
+                                            Consulter
+                                        </button>
+                                    </Link>
                                 </div>
                             </div>
                         );
