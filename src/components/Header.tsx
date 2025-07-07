@@ -103,14 +103,14 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                             </div>
                         ) : isAuthenticated && user ? (
                             <div className="flex items-center space-x-4">
+                                <Link href="/activity" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                                    Activités
+                                </Link>
                                 {/* Notifications */}
                                 <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
                                     <Bell className="h-5 w-5" />
                                     <span className="absolute top-0 right-0 block h-2 w-2 bg-red-500 rounded-full"></span>
                                 </button>
-                                <Link href="/activity" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-                                    Activités
-                                </Link>
 
                                 {/* User Menu */}
                                 <div className="relative">
