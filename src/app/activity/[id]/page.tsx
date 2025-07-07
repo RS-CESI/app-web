@@ -302,7 +302,7 @@ export default function ActivityDetailPage() {
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
                 >
                     <ArrowLeft className="h-5 w-5 mr-2" />
-                    Retour aux activités
+                    Retour
                 </button>
             </div>
 

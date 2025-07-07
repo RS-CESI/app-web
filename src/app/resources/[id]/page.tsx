@@ -144,7 +144,7 @@ export default function ResourceDetailPage() {
                     className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
                 >
                     <ArrowLeft className="h-5 w-5 mr-2" />
-                    Retour au catalogue
+                    Retour
                 </button>
             </div>
 
