@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import './globals.css';
+import {AuthProvider} from "@/contexts/AuthContext";
 
 export default function RootLayout({
                                        children,
@@ -11,13 +14,15 @@ export default function RootLayout({
     return (
         <html lang="fr">
         <body className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-blue-50">
-        <Header />
+        <AuthProvider>
+            <Header />
 
-        <main className="flex-grow">
-            {children}
-        </main>
+            <main className="flex-grow">
+                {children}
+            </main>
 
-        <Footer />
+            <Footer />
+        </AuthProvider>
         </body>
         </html>
     );

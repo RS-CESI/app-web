@@ -6,11 +6,11 @@ import { Heart, Users, Target, Award, Shield, ExternalLink, Mail, Phone, MapPin,
 
 export default function AProposPage() {
     const teamMembers = [
-        { name: 'CARDOSO Dorian', role: 'Chef de projet & Développeur Full-Stack' },
-        { name: 'GUERRERO Clément', role: 'Développeur Front-End & UI/UX' },
-        { name: 'DESHAYES Enzo', role: 'Développeur Back-End & Base de données' },
-        { name: 'ANTOINE Paul', role: 'Développeur Mobile & Tests' },
-        { name: 'FONTEP Teddy', role: 'Analyste & Documentation' }
+        { name: 'ANTOINE Paul', role: 'Chef de projet' },
+        { name: 'CARDOSO Dorian', role: 'Développeur Back-End & Base de données' },
+        { name: 'GUERRERO Clément', role: 'Lead Développeur, Développeur Full-Stack' },
+        { name: 'DESHAYES Enzo', role: 'Développeur Mobile' },
+        { name: 'FONTEP Teddy', role: 'Développeur Front-End & UI/UX' }
     ];
 
     const technologies = [
