@@ -14,7 +14,7 @@ export class AuthApi {
     static async login(credentials: LoginCredentials): Promise<ApiResponse<User>> {
         await apiClient.getCsrfToken();
 
-        const response = await apiClient.post<ApiResponse<User>>('/api/login', {
+        const response = await apiClient.post<ApiResponse<User>>('/login', {
             email: credentials.email,
             password: credentials.password,
             remember: credentials.rememberMe || false,
@@ -34,7 +34,7 @@ export class AuthApi {
     static async register(userData: RegisterData): Promise<ApiResponse<User>> {
         await apiClient.getCsrfToken();
 
-        const response = await apiClient.post<ApiResponse<User>>('/api/register', {
+        const response = await apiClient.post<ApiResponse<User>>('/register', {
             name: userData.name,
             email: userData.email,
             password: userData.password,
